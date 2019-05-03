@@ -1,42 +1,49 @@
 package db
 
-class MaxSimulatableAuditor(val db:DBInterface) extends MaxAuditor {
+class MaxSimulatableAuditor(val db:IncomeDB) extends MaxAuditor {
 
 	private var prevQueries = List[(Set[Int], Int)]()
-	private var upperBounds = HashMap[Int, Int]()
+	private var upperBounds = Map[Int, Int]()
 
 	def getMax(ids:List[Int]): Option[Int] = {
+		if (ids.size <= 1) {
+			return None
+		}
+
 		val idSet = ids.toSet
-		val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).size > 0)
-		val sortedAnswers:List[Int] = relevantQueries.map(_._2).sorted
-		val possibleAnswers:List[Int] = (sortedAnswers.head - 1) :: addBoundMidponts(sortedAnswers) :: (sortedAnswers.last + 1)
-		
-		for (m:Int <- possibleAnswers) {
-			val newBound:Map[Int, Int] = ids.map(i => (i, min(m, upperBounds[i]))).toMap()
-			var extremeCount = 0
-			for ((i, b) <- newBound) {
-				if (b == m) {
-					extremeCount++
+
+		if (prevQueries.size > 0) {
+
+			val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).size > 0)
+			val sortedAnswers:List[Int] = relevantQueries.map(_._2).sorted
+			val possibleAnswers:List[Int] = (sortedAnswers.head - 1) :: (addBoundMidponts(sortedAnswers) :+ (sortedAnswers.last + 1))
+			
+			for (m:Int <- possibleAnswers) {
+				val newBound:Map[Int, Int] = 
+					ids.map(i => 
+							(i, Math.min(m, (if (upperBounds.contains(i)) upperBounds(i) else m))))
+						.toMap
+				val tempUpperBounds = upperBounds ++ newBound
+
+				var extremeCount = numExtremeElements(ids, tempUpperBounds, m)
+
+				if (extremeCount == 1) {
+					return None
 				}
-			}
 
-			if (extremeCount == 1) {
-				return None
-			}
+				for ((qIDs, qm) <- prevQueries) {
+					extremeCount = numExtremeElements(qIDs, tempUpperBounds, qm)
 
-			val tempUpperBounds = upperBounds ++ newBound
-
-			for ((qIDS, qm) <- prevQueries) {
-				// for each element in qIDS
-					//if extreme, inc
-
-				// if extreme == 1
-					//return None
+					if (extremeCount == 1) {
+						return None
+					}
+				}
 			}
 		}
 		
 		val max = db.getMax(ids)
-		prevQueries(idSet) = max
+		prevQueries = (idSet, max) :: prevQueries
+		upperBounds = upperBounds ++ ids.map(i => (i, max)).toMap
 		return Some(max)
 	}
 
@@ -49,5 +56,17 @@ class MaxSimulatableAuditor(val db:DBInterface) extends MaxAuditor {
 				}
 			case Nil => List()
 		}
+	}
+
+	private def numExtremeElements(ids:Iterable[Int], currBounds:Map[Int, Int], m:Int): Int = {
+		var extremeCount = 0
+
+		for (id:Int <- ids) {
+			if (currBounds(id) == m) {
+				extremeCount += 1
+			}
+		}
+
+		return extremeCount
 	}
 }
