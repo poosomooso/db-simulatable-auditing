@@ -1,20 +1,26 @@
 package db
 
+/**
+	* Based off of Kenthapadi et. al's "Simulatable Auditing" (2005).
+	* @param db the IncomeDB being queried.
+	*/
 class MaxSimulatableAuditor(val db:IncomeDB) extends MaxAuditor {
 
 	private var prevQueries = List[(Set[Int], Int)]()
 	private var upperBounds = Map[Int, Int]()
 
-	def getMax(ids:List[Int]): Option[Int] = {
+	override def getName: String = "Simulatable Auditor"
+
+	override def getMax(ids:List[Int]): Option[Int] = {
 		if (ids.size <= 1) {
 			return None
 		}
 
 		val idSet = ids.toSet
 
-		if (prevQueries.size > 0) {
+		if (prevQueries.nonEmpty) {
 
-			val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).size > 0)
+			val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).nonEmpty)
 			val sortedAnswers:List[Int] = relevantQueries.map(_._2).sorted
 			val possibleAnswers:List[Int] = (sortedAnswers.head - 1) :: (addBoundMidponts(sortedAnswers) :+ (sortedAnswers.last + 1))
 			
