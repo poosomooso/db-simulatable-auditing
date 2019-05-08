@@ -2,13 +2,13 @@ package db
 
 object Main {
 	def main(args: Array[String]): Unit = {
-		smallDBTest1
+		smallDBTest
 		println
-		smallDBTest2
+		naiveCompromise
 	}
 
-	def smallDBTest1 : Unit = {
-		println("**smallDBTest1**")
+	def naiveCompromise : Unit = {
+		println("Naive compromise")
 		val db = new IncomeDB()
 		db.addVal(0, "Bob", 60000)
 		db.addVal(1, "Erin", 80000)
@@ -22,15 +22,14 @@ object Main {
 
 		val auditors = List(ksAuditor, simAuditor)
 
-		makeQuery(auditors, List(1,2))
-		makeQuery(auditors, List(0,1,2))
-		makeQuery(auditors, List(0,1,2, 3))
-		makeQuery(auditors, List(0,2))
-		makeQuery(auditors, List(0))
+		makeQuery(auditors, List(0, 1, 2, 3))
+		makeQuery(auditors, List(0, 2, 3))
+		makeQuery(auditors, List(0, 1, 2))
+
 	}
 
-	def smallDBTest2 : Unit = {
-		println("**smallDBTest2**")
+	def smallDBTest : Unit = {
+		println("**Small Test**")
 		val db = new IncomeDB()
 		db.addVal(0, "Bob", 60000)
 		db.addVal(1, "Erin", 80000)
@@ -43,7 +42,8 @@ object Main {
 		val ksAuditor = new KnowledgeSpaceAuditor(db)
 
 		val auditors = List(ksAuditor, simAuditor)
-		
+
+		makeQuery(auditors, List(1))
 		makeQuery(auditors, List(0, 2))
 		makeQuery(auditors, List(0,1))
 		makeQuery(auditors, List(1, 2))

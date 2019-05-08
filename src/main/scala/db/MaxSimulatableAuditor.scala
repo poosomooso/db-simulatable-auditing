@@ -17,10 +17,9 @@ class MaxSimulatableAuditor(val db:IncomeDB) extends MaxAuditor {
 		}
 
 		val idSet = ids.toSet
+		val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).nonEmpty)
 
-		if (prevQueries.nonEmpty) {
-
-			val relevantQueries:List[(Set[Int], Int)] = prevQueries.filter(_._1.intersect(idSet).nonEmpty)
+		if (relevantQueries.nonEmpty) {
 			val sortedAnswers:List[Int] = relevantQueries.map(_._2).sorted
 			val possibleAnswers:List[Int] = (sortedAnswers.head - 1) :: (addBoundMidponts(sortedAnswers) :+ (sortedAnswers.last + 1))
 			
