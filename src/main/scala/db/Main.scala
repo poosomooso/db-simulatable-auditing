@@ -8,7 +8,7 @@ object Main {
 	}
 
 	def naiveCompromise : Unit = {
-		println("Naive compromise")
+		println("**Naive compromise**")
 		val db = new IncomeDB()
 		db.addVal(0, "Bob", 60000)
 		db.addVal(1, "Erin", 80000)

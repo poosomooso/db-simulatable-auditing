@@ -10,7 +10,7 @@ class IncomeDB {
 	def addVal (id:Int, name:String, income:Int): Unit = db(id) = (name, income)
 
 	def printDB (): Unit = {
-		println("      ID         name    income")
+		println("      ID         Name    Salary")
 		for ((id, tup) <- db.toSeq.sortBy(_._1)) {
 			println(f"$id%8d ${tup._1}%12s ${tup._2}%9d")
 		}
